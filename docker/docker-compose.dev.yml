@@ -1,0 +1,56 @@
+# ==============================================================================
+# Docker Compose 开发环境配置
+# ==============================================================================
+# 使用方法:
+#   cd docker
+#   docker compose -f docker-compose.dev.yml up
+# ==============================================================================
+
+services:
+  # PostgreSQL 17.6 数据库（开发环境）
+  db:
+    image: postgres:17.6-alpine
+    container_name: pc_info_db_dev
+    environment:
+      POSTGRES_DB: pc_info_record_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - pc_info_network
+
+  # Django 应用（开发环境 - 使用 runserver）
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: pc_info_web_dev
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ..:/app  # 挂载代码目录，支持热重载
+      - ../logs:/app/logs
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=pc_info_record_dev
+      - DEBUG=True
+    depends_on:
+      - db
+    networks:
+      - pc_info_network
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  pc_info_network:
+    driver: bridge
+

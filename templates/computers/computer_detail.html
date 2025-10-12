@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ computer.asset_code }} - 计算机详情 - PC信息记录系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 详情页面响应式布局 */
+    .detail-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .detail-section {
+        margin-bottom: 2rem;
+    }
+    
+    .detail-section h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+        font-size: 1.1rem;
+        position: relative;
+    }
+    
+    /* 优化分割线长度 */
+    .detail-section h3::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px; /* 限制分割线长度 */
+        height: 2px;
+        background-color: #3498db;
+    }
+    
+    .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    
+    .detail-table td {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: top;
+    }
+    
+    .detail-table td:first-child {
+        font-weight: bold;
+        width: 120px;
+        color: #555;
+    }
+    
+    .detail-table td:last-child {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* 硬件配置网格 */
+    .hardware-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    /* 日志区域 */
+    .log-container {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre-line;
+        max-height: 400px;
+        overflow-y: auto;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .error-log-container {
+        background-color: #fdf2f2;
+        border: 1px solid #fecaca;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+        line-height: 1.4;
+        white-space: pre-line;
+        max-height: 400px;
+        overflow-y: auto;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .hardware-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .detail-section h3 {
+            font-size: 1rem;
+        }
+        
+        .detail-table td:first-child {
+            width: 100px;
+        }
+        
+        .log-container,
+        .error-log-container {
+            font-size: 0.8em;
+            padding: 0.75rem;
+        }
+    }
+    
+    /* 超小屏幕 */
+    @media (max-width: 480px) {
+        .detail-grid {
+            gap: 1rem;
+        }
+        
+        .hardware-grid {
+            gap: 1rem;
+        }
+        
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-table td {
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .detail-table td:first-child {
+            width: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card detail-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>计算机详情 - {{ computer.asset_code }}</h2>
+        <a href="{% url 'computers:computer_list' %}" class="btn btn-secondary">返回列表</a>
+    </div>
+    
+    <div class="detail-grid">
+        <!-- 基本信息 -->
+        <div class="detail-section">
+            <h3>基本信息</h3>
+            <table class="detail-table">
+                <tr>
+                    <td>资产编码</td>
+                    <td>{{ computer.asset_code }}</td>
+                </tr>
+                <tr>
+                    <td>SN码</td>
+                    <td>{{ computer.sn_code }}</td>
+                </tr>
+                <tr>
+                    <td>型号</td>
+                    <td>{{ computer.model }}</td>
+                </tr>
+                <tr>
+                    <td>设备类型</td>
+                    <td>{{ computer.device_type }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- 用户信息 -->
+        <div class="detail-section">
+            <h3>用户信息</h3>
+            <table class="detail-table">
+                <tr>
+                    <td>用户名</td>
+                    <td>{{ computer.user_name }}</td>
+                </tr>
+                <tr>
+                    <td>计算机名</td>
+                    <td>{{ computer.computer_name }}</td>
+                </tr>
+                <tr>
+                    <td>状态</td>
+                    <td>
+                        {% if computer.has_errors %}
+                            <span style="color: #e74c3c; font-weight: bold;">⚠️ 有错误</span>
+                        {% else %}
+                            <span style="color: #27ae60; font-weight: bold;">✅ 正常</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <h3>硬件配置</h3>
+        <div class="hardware-grid">
+            <table class="detail-table">
+                <tr>
+                    <td>CPU型号</td>
+                    <td>{{ computer.cpu_model }}</td>
+                </tr>
+                <tr>
+                    <td>内存大小</td>
+                    <td>{{ computer.memory_size }}GB</td>
+                </tr>
+            </table>
+            
+            <table class="detail-table">
+                <tr>
+                    <td>操作系统</td>
+                    <td>{{ computer.os_version }}</td>
+                </tr>
+                <tr>
+                    <td>内部版本</td>
+                    <td>{{ computer.os_internal_version }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <h3>系统信息</h3>
+        <table class="detail-table">
+            <tr>
+                <td>上传者</td>
+                <td>{{ computer.uploader }}</td>
+            </tr>
+            <tr>
+                <td>上传时间</td>
+                <td>{{ computer.upload_time|date:"Y-m-d H:i:s" }}</td>
+            </tr>
+            <tr>
+                <td>最后更新</td>
+                <td>{{ computer.last_update|date:"Y-m-d H:i:s" }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <!-- 执行日志区域 -->
+    {% if computer.execution_log %}
+    <div class="detail-section">
+        <h3>📋 执行日志</h3>
+        <div class="log-container">
+{{ computer.execution_log }}
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.8em; color: #666;">
+            📊 日志大小: {{ computer.log_size|filesizeformat }} | 💡 这是PowerShell脚本的完整执行日志
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 业务错误区域 -->
+    {% if computer.has_errors and computer.error_log %}
+    <div class="detail-section">
+        <h3 style="color: #e74c3c; border-bottom-color: #e74c3c;">⚠️ 业务错误</h3>
+        <div class="error-log-container">
+{{ computer.error_log }}
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.8em; color: #666;">
+            💡 这些是业务逻辑错误：加域失败、激活失败、硬件驱动异常等
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}高级搜索 - PC信息记录系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 高级搜索页面智能列宽分配 */
+    .table-container table th:nth-child(1), 
+    .table-container table td:nth-child(1) { width: 20%; } /* 资产编码 */
+    
+    .table-container table th:nth-child(2), 
+    .table-container table td:nth-child(2) { width: 20%; } /* 型号 */
+    
+    .table-container table th:nth-child(3), 
+    .table-container table td:nth-child(3) { width: 25%; } /* CPU */
+    
+    .table-container table th:nth-child(4), 
+    .table-container table td:nth-child(4) { width: 10%; } /* 内存 */
+    
+    .table-container table th:nth-child(5), 
+    .table-container table td:nth-child(5) { width: 20%; } /* 操作系统 */
+    
+    .table-container table th:nth-child(6), 
+    .table-container table td:nth-child(6) { width: 15%; } /* 上传时间 */
+    
+    .table-container table th:nth-child(7), 
+    .table-container table td:nth-child(7) { width: 10%; } /* 操作 */
+    
+    /* 特殊列的内容处理 */
+    .table-container table td:nth-child(3) { /* CPU列 */
+        font-size: 0.9em;
+        line-height: 1.3;
+    }
+    
+    .table-container table td:nth-child(5) { /* 操作系统列 */
+        font-size: 0.9em;
+        line-height: 1.3;
+    }
+    
+    /* 操作列居中 */
+    .table-container table td:nth-child(7) {
+        text-align: center;
+    }
+    
+    /* 移动端列宽调整 */
+    @media (max-width: 768px) {
+        .table-container table th:nth-child(1), 
+        .table-container table td:nth-child(1) { width: 25%; } /* 资产编码 */
+        
+        .table-container table th:nth-child(2), 
+        .table-container table td:nth-child(2) { width: 25%; } /* 型号 */
+        
+        .table-container table th:nth-child(3), 
+        .table-container table td:nth-child(3) { width: 30%; } /* CPU */
+        
+        .table-container table th:nth-child(4), 
+        .table-container table td:nth-child(4) { width: 10%; } /* 内存 */
+        
+        .table-container table th:nth-child(5), 
+        .table-container table td:nth-child(5) { width: 25%; } /* 操作系统 */
+        
+        .table-container table th:nth-child(6), 
+        .table-container table td:nth-child(6) { width: 20%; } /* 上传时间 */
+        
+        .table-container table th:nth-child(7), 
+        .table-container table td:nth-child(7) { width: 15%; } /* 操作 */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>高级搜索</h2>
+    
+    <!-- 搜索表单 -->
+    <form method="get" class="search-form">
+        <div class="form-group">
+            <label for="user_name">用户名</label>
+            <input type="text" id="user_name" name="user_name" class="form-control" 
+                   placeholder="输入用户名" 
+                   value="{{ search_params.user_name }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="asset_code">资产编码</label>
+            <input type="text" id="asset_code" name="asset_code" class="form-control" 
+                   placeholder="输入资产编码" 
+                   value="{{ search_params.asset_code }}">
+        </div>
+        
+        
+        <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn">搜索</button>
+            <a href="{% url 'computers:search' %}" class="btn btn-secondary">重置</a>
+        </div>
+    </form>
+    
+    <!-- 搜索结果 -->
+    {% if page_obj %}
+        <div style="margin-top: 2rem;">
+            <h3>搜索结果</h3>
+            <p style="margin-bottom: 1rem; color: #666;">
+                共找到 {{ page_obj.paginator.count }} 条记录，当前显示第 {{ page_obj.start_index }}-{{ page_obj.end_index }} 条
+            </p>
+            
+            <div class="table-container">
+                <table>
+                <thead>
+                    <tr>
+                        <th>资产编码</th>
+                        <th>型号</th>
+                        <th>CPU</th>
+                        <th>内存</th>
+                        <th>操作系统</th>
+                        <th>上传时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for computer in page_obj %}
+                        <tr>
+                            <td>{{ computer.asset_code }}</td>
+                            <td>{{ computer.model }}</td>
+                            <td>{{ computer.cpu_model }}</td>
+                            <td>{{ computer.memory_size }}GB</td>
+                            <td>{{ computer.os_version }}</td>
+                            <td>{{ computer.upload_time|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <a href="{% url 'computers:computer_detail' computer.pk %}" class="btn">查看详情</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% for key, value in search_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">首页</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in search_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">上一页</a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% for key, value in search_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% for key, value in search_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">下一页</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in search_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">末页</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% elif request.GET %}
+        <p style="text-align: center; color: #666; padding: 2rem;">没有找到符合条件的记录</p>
+    {% endif %}
+</div>
+{% endblock %}

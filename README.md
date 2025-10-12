@@ -1,0 +1,599 @@
+# PC信息记录系统
+
+一个基于 Django 的企业级 PC 信息记录和管理系统，集成 LDAP/Active Directory 认证，支持自动收集和管理 Windows 计算机信息。
+
+## ✨ 功能特性
+
+- 🖥️ **自动信息收集**：通过客户端自动收集 Windows 计算机的硬件、系统信息
+- 📊 **数据管理**：提供 Web 界面进行数据查看、搜索、筛选
+- 🔐 **LDAP/AD 认证**：集成企业 Active Directory，统一用户认证
+- 🔍 **高级搜索**：支持多条件组合搜索和筛选
+- 📡 **REST API**：提供完整的 REST API 接口
+- 🔧 **管理后台**：功能强大的 Django Admin 后台
+- 📱 **响应式设计**：支持桌面和移动设备访问
+- 🐳 **Docker 支持**：完整的容器化部署方案
+
+## 🛠️ 技术栈
+
+### 后端
+- **框架**: Django 5.2.7
+- **数据库**: PostgreSQL 17.6
+- **API**: Django REST Framework 3.16+
+- **认证**: django-auth-ldap + python-ldap
+- **应用服务器**: Gunicorn 23.0 (生产环境)
+- **Web 服务器**: Nginx (生产环境)
+
+### 前端
+- Django 模板引擎
+- 原生 CSS + 响应式设计
+
+### 客户端
+- Python 3.11+
+- psutil、WMI (Windows 信息采集)
+
+### 开发工具
+- **包管理**: uv (开发环境) / pip (Docker)
+- **容器化**: Docker + Docker Compose
+- **数据库工具**: pgcli
+
+## 📁 项目结构
+
+```
+PC_info_record/
+├── docker/                      # Docker 配置目录
+│   ├── Dockerfile               # 容器镜像配置
+│   ├── docker-compose.yml       # 生产环境编排
+│   ├── docker-compose.dev.yml   # 开发环境编排
+│   ├── .dockerignore            # 构建忽略文件
+│   ├── entrypoint.sh            # 容器启动脚本
+│   ├── nginx.conf               # Nginx 配置
+│   ├── .env -> ../.env          # 符号链接到根目录 .env
+│   └── DEPLOYMENT_SUCCESS.md    # 部署成功记录
+│
+├── pc_info_record/              # Django 项目配置
+│   ├── settings.py              # 设置（含 LDAP 配置）
+│   ├── urls.py
+│   └── wsgi.py
+│
+├── computers/                   # 计算机管理应用
+│   ├── models.py                # 数据模型
+│   ├── views.py
+│   ├── admin.py
+│   └── migrations/
+│
+├── api/                         # REST API
+│   ├── views.py
+│   └── urls.py
+│
+├── client/                      # Windows 客户端
+│   ├── collect_info.py          # 信息采集脚本（含使用说明）
+│   └── requirements.txt         # 客户端依赖
+│
+├── templates/                   # Django 模板
+├── static/                      # 静态文件
+├── logs/                        # 日志文件（开发环境）
+│
+├── requirements.txt             # Python 依赖列表
+├── pyproject.toml               # 项目配置
+├── manage.py                    # Django 管理脚本
+├── test_ldap_connection.py      # LDAP 测试工具
+│
+├── README.md                    # 本文件
+├── .env.example                 # 环境变量模板（开发+生产）
+└── .env                         # 实际配置（不提交Git）
+```
+
+## 🚀 快速开始
+
+### 方式一：Docker 部署（推荐）⭐
+
+**最简单的方式，5 分钟内启动完整系统！**
+
+```bash
+# 1. 克隆项目
+git clone <repository-url>
+cd PC_info_record
+
+# 2. 配置环境变量
+cp .env.example .env
+nano .env  # 修改数据库密码、LDAP 配置、生产环境设置等
+
+# 3. 启动服务
+cd docker
+docker compose up -d
+
+# 4. 创建超级用户
+docker compose exec web python manage.py createsuperuser
+
+# 5. 访问应用
+# 浏览器打开: http://localhost
+```
+
+---
+
+### 方式二：本地开发环境
+
+适合开发和调试。
+
+#### 1. 环境准备
+
+确保已安装：
+- Python 3.11+
+- PostgreSQL 17.6+
+- uv (Python 包管理器)
+
+#### 2. 安装 uv
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+#### 3. 克隆项目并安装依赖
+
+```bash
+git clone <repository-url>
+cd PC_info_record
+
+# 同步依赖（自动创建虚拟环境）
+uv sync
+```
+
+#### 4. 配置环境变量
+
+```bash
+cp .env.example .env
+nano .env  # 编辑配置
+```
+
+**必须配置**：
+```env
+# 数据库配置
+DB_NAME=pc_info_record
+DB_USER=postgres
+DB_PASSWORD=your-password
+DB_HOST=localhost
+DB_PORT=5432
+
+# LDAP 配置（如果使用 AD 认证）
+LDAP_SERVER_URI=ldap://your-ldap-server:389
+LDAP_BIND_DN=CN=service_account,OU=Users,DC=example,DC=com
+LDAP_BIND_PASSWORD=your-ldap-password
+LDAP_USER_BASE_DN=OU=Users,DC=example,DC=com
+```
+
+#### 5. 创建数据库
+
+```bash
+# 使用 pgcli 或 psql
+createdb pc_info_record
+```
+
+#### 6. 运行迁移
+
+```bash
+# 运行数据库迁移
+uv run python manage.py migrate
+
+# 创建超级用户
+uv run python manage.py createsuperuser
+```
+
+#### 7. 启动开发服务器
+
+```bash
+uv run python manage.py runserver
+```
+
+访问 http://localhost:8000
+
+---
+
+### 🧪 测试 LDAP 连接（可选）
+
+```bash
+# 本地开发
+uv run python test_ldap_connection.py
+
+# Docker 环境
+cd docker
+docker compose exec -it web python test_ldap_connection.py
+```
+
+## 📖 使用说明
+
+### Web 界面
+
+**本地开发环境**：
+- **管理后台**：http://localhost:8000/admin/
+- **API 浏览器**：http://localhost:8000/api/
+
+**Docker 生产环境**：
+- **管理后台**：http://localhost/admin/
+- **API 端点**：http://localhost/api/
+- **健康检查**：http://localhost/health/
+
+### 🔐 用户认证
+
+系统支持两种认证方式：
+
+1. **LDAP/AD 认证**（主要）
+   - 使用企业域账号登录
+   - 首次登录自动创建用户
+   - 用户信息从 LDAP 同步
+
+2. **Django 本地认证**（备用）
+   - 超级用户账号
+   - 用于管理和应急访问
+
+### 📡 REST API
+
+#### 提交计算机信息
+```bash
+POST http://localhost/api/computers/
+Content-Type: application/json
+
+{
+  "asset_code": "PC-001",
+  "sn_code": "SN123456",
+  "model": "Dell OptiPlex 7090",
+  "device_type": "Desktop",
+  "cpu_model": "Intel i7-11700",
+  "memory_size": 16,
+  "os_version": "Windows 11 Pro",
+  "os_internal_version": "22H2",
+  "user_name": "zhangsan",
+  "computer_name": "DESKTOP-ABC123"
+}
+```
+
+#### 查询计算机列表
+```bash
+GET http://localhost/api/computers/
+```
+
+#### 获取单个计算机详情
+```bash
+GET http://localhost/api/computers/{id}/
+```
+
+### 💻 Windows 客户端使用
+
+客户端用于自动收集 Windows 计算机信息并提交到服务器。
+
+```bash
+# 1. 进入客户端目录
+cd client/
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 查看使用说明
+python collect_info.py --help
+# 或直接查看脚本开头的详细文档字符串
+
+# 4. 配置服务器地址（三种方式任选其一）
+# 方式1: 编辑脚本中的 SERVER_URL 变量
+# 方式2: 设置环境变量 SERVER_URL
+# 方式3: 创建 .env 文件
+
+# 5. 运行收集脚本（需要管理员权限）
+python collect_info.py
+```
+
+**说明**: 脚本会自动收集信息并提交到服务器，同时保存到本地 `computer_info.json` 用于调试。
+
+## 📋 数据模型
+
+### Computer (计算机)
+
+**基本信息**：
+- `asset_code` - 资产编码（有索引）
+- `sn_code` - SN 序列号
+- `model` - 型号
+- `device_type` - 设备类型
+
+**硬件信息**：
+- `cpu_model` - CPU 型号
+- `memory_size` - 内存大小 (GB)
+
+**系统信息**：
+- `os_version` - 操作系统版本
+- `os_internal_version` - 操作系统内部版本
+
+**用户信息**：
+- `user_name` - 用户名
+- `computer_name` - 计算机名
+
+**日志信息**：
+- `execution_log` - PowerShell 脚本执行日志
+- `log_size` - 日志大小（字节）
+- `error_log` - 错误日志
+- `has_errors` - 是否有错误（有索引）
+
+**元数据**：
+- `uploader` - 上传者（默认 "Robot"）
+- `upload_time` - 上传时间（自动）
+- `last_update` - 最后更新时间（自动）
+
+## 🚢 生产环境部署
+
+### Docker 部署（推荐）⭐
+
+完整的生产级部署方案，包含 Nginx + Gunicorn + PostgreSQL。
+
+```bash
+# 1. 配置环境变量
+cp .env.example .env
+nano .env  # 修改为生产配置（重要：DEBUG=False, DB_HOST=db）
+
+# 2. 启动服务
+cd docker
+docker compose up -d
+
+# 3. 创建超级用户
+docker compose exec web python manage.py createsuperuser
+
+# 访问: http://localhost
+```
+
+**技术架构**：
+- ✅ Nginx - 反向代理 + 静态文件服务
+- ✅ Gunicorn - WSGI 应用服务器（4 workers）
+- ✅ PostgreSQL 17.6 - 数据库
+- ✅ 健康检查 - 自动重启
+- ✅ 日志管理 - Docker logs
+
+---
+
+### 传统部署
+
+如果不使用 Docker，可以参考以下步骤：
+
+1. **安装系统依赖**（LDAP 编译所需）
+   ```bash
+   sudo apt-get install libldap2-dev libsasl2-dev libssl-dev
+   ```
+
+2. **安装 Python 依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **配置环境变量**
+   ```bash
+   cp .env.example .env
+   # 编辑 .env，设置 DEBUG=False
+   ```
+
+4. **收集静态文件**
+   ```bash
+   python manage.py collectstatic --noinput
+   ```
+
+5. **启动 Gunicorn**
+   ```bash
+   gunicorn pc_info_record.wsgi:application \
+     --bind 0.0.0.0:8000 \
+     --workers 4 \
+     --timeout 120
+   ```
+
+6. **配置 Nginx** - 参考 [docker/nginx.conf](docker/nginx.conf)
+
+## 🔧 LDAP/Active Directory 配置
+
+系统集成了企业 Active Directory 认证。配置方法：
+
+### 1. 环境变量配置
+
+在 `.env` 文件中配置：
+
+```env
+LDAP_SERVER_URI=ldap://your-ldap-server.com:389
+LDAP_BIND_DN=CN=service_account,OU=ServiceAccounts,DC=example,DC=com
+LDAP_BIND_PASSWORD=your-service-password
+LDAP_USER_BASE_DN=OU=Users,DC=example,DC=com
+```
+
+### 2. 测试 LDAP 连接
+
+```bash
+# 本地环境
+uv run python test_ldap_connection.py
+
+# Docker 环境
+cd docker
+docker compose exec -it web python test_ldap_connection.py
+```
+
+### 3. 用户属性映射
+
+系统自动将 LDAP 属性映射到 Django 用户：
+- `sAMAccountName` → `username`
+- `givenName` → `first_name`
+- `sn` → `last_name`
+- `mail` → `email`
+
+详细配置请查看 `pc_info_record/settings.py` 中的 LDAP 配置部分。
+
+---
+
+## 👨‍💻 开发指南
+
+### 开发环境设置
+
+```bash
+# 安装开发依赖
+uv sync --group dev
+
+# 启动开发服务器
+uv run python manage.py runserver
+
+# 运行测试
+uv run python manage.py test
+
+# 创建迁移
+uv run python manage.py makemigrations
+```
+
+### Docker 开发环境
+
+支持代码热重载：
+
+```bash
+cd docker
+docker compose -f docker-compose.dev.yml up
+```
+
+### 代码规范
+
+- ✅ 遵循 PEP 8 代码风格
+- ✅ 添加适当的注释和文档字符串
+- ✅ 使用 Django 最佳实践
+- ✅ 编写单元测试（推荐）
+
+## 🆘 故障排除
+
+### Docker 环境
+
+```bash
+cd docker
+
+# 查看服务状态
+docker compose ps
+
+# 查看日志
+docker compose logs -f web
+
+# 重启服务
+docker compose restart web
+
+# 完全重置（会删除数据）
+docker compose down -v
+docker compose up -d
+```
+
+### 本地开发环境
+
+#### 1. 数据库连接失败
+```bash
+# 检查 PostgreSQL 服务
+sudo systemctl status postgresql
+
+# 测试连接
+psql -U postgres -d pc_info_record
+```
+
+#### 2. LDAP 认证失败
+```bash
+# 运行 LDAP 测试工具
+uv run python test_ldap_connection.py
+
+# 检查配置
+# - LDAP_SERVER_URI 是否正确
+# - LDAP_BIND_DN 和密码是否正确
+# - LDAP_USER_BASE_DN 是否正确
+```
+
+#### 3. 静态文件无法加载
+```bash
+# 开发环境（不需要 collectstatic）
+DEBUG=True  # 确保 DEBUG 开启
+
+# 生产环境
+python manage.py collectstatic --noinput
+```
+
+#### 4. 系统依赖缺失（LDAP）
+```bash
+# Ubuntu/Debian
+sudo apt-get install libldap2-dev libsasl2-dev libssl-dev
+
+# 重新安装 Python 依赖
+uv sync
+```
+
+
+## 🔧 常用命令
+
+### Docker 环境
+
+```bash
+cd docker
+
+# 服务管理
+docker compose up -d          # 启动
+docker compose down           # 停止
+docker compose restart        # 重启
+docker compose ps             # 状态
+docker compose logs -f web    # 日志
+
+# 数据库管理
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec db pg_dump -U postgres pc_info_record > backup.sql
+
+# 应用管理
+docker compose exec web python manage.py shell
+docker compose exec -it web python test_ldap_connection.py
+```
+
+### 本地开发
+
+```bash
+# 启动开发服务器
+uv run python manage.py runserver
+
+# 数据库操作
+uv run python manage.py makemigrations
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
+
+# Django shell
+uv run python manage.py shell
+
+# 测试 LDAP
+uv run python test_ldap_connection.py
+```
+
+---
+
+## 🤝 贡献指南
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+---
+
+## 📄 许可证
+
+MIT License
+
+---
+
+## 💬 联系方式
+
+如有问题或建议：
+- 📧 提交 Issue
+- 📝 查看文档
+- 🔍 查看故障排查部分
+
+---
+
+## 🙏 致谢
+
+- Django 社区
+- PostgreSQL 团队
+- Astral (uv 开发团队)
+- 所有贡献者
+
+---
+
+**祝使用愉快！** 🎉

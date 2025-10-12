@@ -1,0 +1,29 @@
+[project]
+name = "pc-info-record"
+version = "0.1.0"
+description = "PC信息记录系统"
+authors = [
+    {name = "Admin", email = "admin@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.0.0",
+    "psycopg2-binary>=2.9.0",
+    "djangorestframework>=3.14.0",
+    "python-dotenv>=1.0.0",
+    "pgcli>=4.3.0",
+    "requests>=2.32.5",
+    "django-auth-ldap>=4.6.0",
+    "python-ldap>=3.4.4",
+    "gunicorn>=21.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "django-debug-toolbar>=4.2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
