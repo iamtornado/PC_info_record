@@ -24,9 +24,7 @@ services:
 
   # Django 应用
   web:
-    build: 
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: tornadoami/pc-info-record:v1.0.0
     container_name: pc_info_web
     runtime: runc
     command: gunicorn pc_info_record.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120 --access-logfile - --error-logfile -

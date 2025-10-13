@@ -11,7 +11,7 @@
 - 📡 **REST API**：提供完整的 REST API 接口
 - 🔧 **管理后台**：功能强大的 Django Admin 后台
 - 📱 **响应式设计**：支持桌面和移动设备访问
-- 🐳 **Docker 支持**：完整的容器化部署方案
+- 🐳 **Docker 支持**：完整的容器化部署方案，已发布到 Docker Hub
 
 ## 🛠️ 技术栈
 
@@ -34,6 +34,7 @@
 ### 开发工具
 - **包管理**: uv (开发环境) / pip (Docker)
 - **容器化**: Docker + Docker Compose
+- **镜像仓库**: Docker Hub ([tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record))
 - **数据库工具**: pgcli
 
 ## 📁 项目结构
@@ -85,12 +86,14 @@ PC_info_record/
 
 ## 🚀 快速开始
 
-### 方式一：Docker 部署（推荐）⭐
+### 方式一：Docker Hub 快速部署（推荐）⭐⭐
 
-**最简单的方式，5 分钟内启动完整系统！**
+**🎉 最快最简单的方式，无需构建镜像，3 分钟内启动完整系统！**
+
+本项目已发布到 Docker Hub：[tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record)
 
 ```bash
-# 1. 克隆项目
+# 1. 克隆项目（只需要配置文件）
 git clone https://github.com/iamtornado/PC_info_record.git
 cd PC_info_record
 
@@ -98,7 +101,7 @@ cd PC_info_record
 cp .env.example .env
 nano .env  # 修改数据库密码、LDAP 配置、生产环境设置等
 
-# 3. 启动服务
+# 3. 启动服务（自动从 Docker Hub 拉取镜像）
 cd docker
 docker compose up -d
 
@@ -109,9 +112,45 @@ docker compose exec web python manage.py createsuperuser
 # 浏览器打开: http://your_server_ip_or_domain
 ```
 
+**优势**：
+- ✅ 无需本地构建，直接使用预构建镜像
+- ✅ 更快的部署速度
+- ✅ 节省磁盘空间和构建时间
+- ✅ 确保使用经过测试的稳定版本
+
 ---
 
-### 方式二：本地开发环境
+### 方式二：Docker 本地构建部署
+
+如果需要修改代码或自定义构建：
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/iamtornado/PC_info_record.git
+cd PC_info_record
+
+# 2. 修改 docker-compose.yml，使用本地构建
+cd docker
+nano docker-compose.yml
+# 将 web 服务的 image 改为 build 配置：
+#   build:
+#     context: ..
+#     dockerfile: docker/Dockerfile
+
+# 3. 配置环境变量
+cp ../.env.example ../.env
+nano ../.env
+
+# 4. 构建并启动
+docker compose up -d --build
+
+# 5. 创建超级用户
+docker compose exec web python manage.py createsuperuser
+```
+
+---
+
+### 方式三：本地开发环境
 
 适合开发和调试。
 
@@ -321,23 +360,29 @@ python collect_info.py
 
 ## 🚢 生产环境部署
 
-### Docker 部署（推荐）⭐
+### Docker Hub 部署（推荐）⭐⭐
 
 完整的生产级部署方案，包含 Nginx + Gunicorn + PostgreSQL。
 
+**使用预构建镜像，无需本地编译！**
+
 ```bash
-# 1. 配置环境变量
+# 1. 下载配置文件
+git clone https://github.com/iamtornado/PC_info_record.git
+cd PC_info_record
+
+# 2. 配置环境变量
 cp .env.example .env
 nano .env  # 修改为生产配置（重要：DEBUG=False, DB_HOST=db）
 
-# 2. 启动服务
+# 3. 启动服务（自动从 Docker Hub 拉取 tornadoami/pc-info-record:v1.0.0）
 cd docker
 docker compose up -d
 
-# 3. 创建超级用户
+# 4. 创建超级用户
 docker compose exec web python manage.py createsuperuser
 
-# 访问: http://localhost
+# 访问: http://your_domain_or_ip
 ```
 
 **技术架构**：
@@ -346,6 +391,18 @@ docker compose exec web python manage.py createsuperuser
 - ✅ PostgreSQL 17.6 - 数据库
 - ✅ 健康检查 - 自动重启
 - ✅ 日志管理 - Docker logs
+- ✅ Docker Hub - 预构建镜像 (`tornadoami/pc-info-record`)
+
+**镜像版本**：
+- `tornadoami/pc-info-record:latest` - 最新版本（自动更新）
+- `tornadoami/pc-info-record:v1.0.0` - 稳定版本（当前使用）
+
+**更新镜像**：
+```bash
+cd docker
+docker compose pull      # 拉取最新镜像
+docker compose up -d     # 重启服务应用新镜像
+```
 
 ---
 
@@ -442,12 +499,18 @@ uv run python manage.py makemigrations
 
 ### Docker 开发环境
 
-支持代码热重载：
+支持代码热重载的开发环境（使用本地构建）：
 
 ```bash
 cd docker
 docker compose -f docker-compose.dev.yml up
 ```
+
+**说明**：
+- `docker-compose.dev.yml` 使用本地构建，挂载代码目录
+- 支持代码修改实时生效（热重载）
+- 使用 Django runserver（开发模式）
+- `docker-compose.yml` 使用 Docker Hub 预构建镜像（生产模式）
 
 ### 代码规范
 
