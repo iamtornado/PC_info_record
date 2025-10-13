@@ -20,6 +20,9 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# CSRF 信任的源（Django 4.0+ 必需）
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost,https://localhost,http://127.0.0.1,https://127.0.0.1').split(',')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
