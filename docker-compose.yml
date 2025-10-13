@@ -41,6 +41,22 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DOCKER_CONTAINER=true
+      # Django 核心配置（从 .env 读取）
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      # 数据库配置（从 .env 读取）
+      - DB_NAME=${DB_NAME:-pc_info_record}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      # LDAP 配置（从 .env 读取）
+      - LDAP_SERVER_URI=${LDAP_SERVER_URI}
+      - LDAP_BIND_DN=${LDAP_BIND_DN}
+      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD}
+      - LDAP_USER_BASE_DN=${LDAP_USER_BASE_DN}
+      # 其他配置
+      - TIME_ZONE=${TIME_ZONE:-Asia/Shanghai}
+      - LANGUAGE_CODE=${LANGUAGE_CODE:-zh-hans}
     depends_on:
       db:
         condition: service_healthy
