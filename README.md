@@ -91,7 +91,7 @@ PC_info_record/
 
 ```bash
 # 1. 克隆项目
-git clone <repository-url>
+git clone https://github.com/iamtornado/PC_info_record.git
 cd PC_info_record
 
 # 2. 配置环境变量
@@ -106,7 +106,7 @@ docker compose up -d
 docker compose exec web python manage.py createsuperuser
 
 # 5. 访问应用
-# 浏览器打开: http://localhost
+# 浏览器打开: http://your_server_ip_or_domain
 ```
 
 ---
