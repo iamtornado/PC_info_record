@@ -4,6 +4,8 @@ services:
     image: postgres:17.6-alpine
     container_name: pc_info_db
     runtime: runc
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${DB_NAME:-pc_info_record}
       POSTGRES_USER: ${DB_USER:-postgres}
@@ -33,6 +35,8 @@ services:
       - media:/app/media
     expose:
       - "8000"
+    env_file:
+      - .env
     environment:
       - DB_HOST=db
       - DB_PORT=5432

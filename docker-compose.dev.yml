@@ -10,6 +10,8 @@ services:
   db:
     image: postgres:17.6-alpine
     container_name: pc_info_db_dev
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: pc_info_record_dev
       POSTGRES_USER: postgres
@@ -34,6 +36,8 @@ services:
       - ./logs:/app/logs
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - DB_HOST=db
       - DB_PORT=5432
