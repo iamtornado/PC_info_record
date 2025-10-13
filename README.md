@@ -41,15 +41,16 @@
 
 ```
 PC_info_record/
-├── docker/                      # Docker 配置目录
+├── docker/                      # Docker 配置文件目录
 │   ├── Dockerfile               # 容器镜像配置
-│   ├── docker-compose.yml       # 生产环境编排
-│   ├── docker-compose.dev.yml   # 开发环境编排
 │   ├── .dockerignore            # 构建忽略文件
 │   ├── entrypoint.sh            # 容器启动脚本
-│   ├── nginx.conf               # Nginx 配置
-│   ├── .env -> ../.env          # 符号链接到根目录 .env
-│   └── DEPLOYMENT_SUCCESS.md    # 部署成功记录
+│   └── nginx.conf               # Nginx 配置
+│
+├── docker-compose.yml           # 生产环境 Docker 编排 ⭐
+├── docker-compose.dev.yml       # 开发环境 Docker 编排
+├── .env                         # 环境变量配置（不提交Git）
+├── .env.example                 # 环境变量模板
 │
 ├── pc_info_record/              # Django 项目配置
 │   ├── settings.py              # 设置（含 LDAP 配置）
@@ -102,7 +103,6 @@ cp .env.example .env
 nano .env  # 修改数据库密码、LDAP 配置、生产环境设置等
 
 # 3. 启动服务（自动从 Docker Hub 拉取镜像）
-cd docker
 docker compose up -d
 
 # 4. 创建超级用户
@@ -238,7 +238,6 @@ uv run python manage.py runserver
 uv run python test_ldap_connection.py
 
 # Docker 环境
-cd docker
 docker compose exec -it web python test_ldap_connection.py
 ```
 
@@ -373,10 +372,9 @@ cd PC_info_record
 
 # 2. 配置环境变量
 cp .env.example .env
-nano .env  # 修改为生产配置（重要：DEBUG=False, DB_HOST=db）
+nano .env  # 修改为生产配置（重要：DEBUG=False, SECRET_KEY, DB_PASSWORD）
 
 # 3. 启动服务（自动从 Docker Hub 拉取 tornadoami/pc-info-record:v1.0.0）
-cd docker
 docker compose up -d
 
 # 4. 创建超级用户
@@ -463,7 +461,6 @@ LDAP_USER_BASE_DN=OU=Users,DC=example,DC=com
 uv run python test_ldap_connection.py
 
 # Docker 环境
-cd docker
 docker compose exec -it web python test_ldap_connection.py
 ```
 
@@ -502,7 +499,6 @@ uv run python manage.py makemigrations
 支持代码热重载的开发环境（使用本地构建）：
 
 ```bash
-cd docker
 docker compose -f docker-compose.dev.yml up
 ```
 
@@ -524,8 +520,6 @@ docker compose -f docker-compose.dev.yml up
 ### Docker 环境
 
 ```bash
-cd docker
-
 # 查看服务状态
 docker compose ps
 
@@ -586,8 +580,6 @@ uv sync
 ### Docker 环境
 
 ```bash
-cd docker
-
 # 服务管理
 docker compose up -d          # 启动
 docker compose down           # 停止
