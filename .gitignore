@@ -33,6 +33,7 @@ local_settings.py
 .env.remote
 docker/.env
 client/.env
+client/myse_unattend_firstLogonCommand_win11.ps1
 
 # IDEs
 .vscode/

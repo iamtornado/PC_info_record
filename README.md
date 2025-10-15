@@ -28,8 +28,7 @@
 - 原生 CSS + 响应式设计
 
 ### 客户端
-- Python 3.11+
-- psutil、WMI (Windows 信息采集)
+- PowerShell 5.1+ (Windows 信息采集)
 
 ### 开发工具
 - **包管理**: uv (开发环境) / pip (Docker)
@@ -68,8 +67,7 @@ PC_info_record/
 │   └── urls.py
 │
 ├── client/                      # Windows 客户端
-│   ├── collect_info.py          # 信息采集脚本（含使用说明）
-│   └── requirements.txt         # 客户端依赖
+│   └── collect_computer_info.ps1  # PowerShell 信息采集脚本
 │
 ├── templates/                   # Django 模板
 ├── static/                      # 静态文件
@@ -79,10 +77,7 @@ PC_info_record/
 ├── pyproject.toml               # 项目配置
 ├── manage.py                    # Django 管理脚本
 ├── test_ldap_connection.py      # LDAP 测试工具
-│
-├── README.md                    # 本文件
-├── .env.example                 # 环境变量模板（开发+生产）
-└── .env                         # 实际配置（不提交Git）
+└── README.md                    # 本文件
 ```
 
 ## 🚀 快速开始
@@ -130,16 +125,16 @@ git clone https://github.com/iamtornado/PC_info_record.git
 cd PC_info_record
 
 # 2. 修改 docker-compose.yml，使用本地构建
-cd docker
 nano docker-compose.yml
-# 将 web 服务的 image 改为 build 配置：
+# 将 web 服务的 image: tornadoami/pc-info-record:v1.0.0 注释掉
+# 取消注释 build 配置：
 #   build:
-#     context: ..
+#     context: .
 #     dockerfile: docker/Dockerfile
 
 # 3. 配置环境变量
-cp ../.env.example ../.env
-nano ../.env
+cp .env.example .env
+nano .env
 
 # 4. 构建并启动
 docker compose up -d --build
@@ -174,7 +169,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 #### 3. 克隆项目并安装依赖
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/iamtornado/PC_info_record.git
 cd PC_info_record
 
 # 同步依赖（自动创建虚拟环境）
@@ -271,8 +266,9 @@ docker compose exec -it web python test_ldap_connection.py
 
 #### 提交计算机信息
 ```bash
-POST http://localhost/api/computers/
+POST http://localhost/api/computers/create/
 Content-Type: application/json
+X-CSRFToken: <token>
 
 {
   "asset_code": "PC-001",
@@ -284,9 +280,16 @@ Content-Type: application/json
   "os_version": "Windows 11 Pro",
   "os_internal_version": "22H2",
   "user_name": "zhangsan",
-  "computer_name": "DESKTOP-ABC123"
+  "computer_name": "DESKTOP-ABC123",
+  "execution_log": "脚本执行日志...",
+  "log_size": 1024,
+  "error_log": "",
+  "has_errors": false,
+  "uploader": "robot"
 }
 ```
+
+**注意**: POST 请求需要 CSRF Token，可以从 `/login/` 页面获取。
 
 #### 查询计算机列表
 ```bash
@@ -298,31 +301,51 @@ GET http://localhost/api/computers/
 GET http://localhost/api/computers/{id}/
 ```
 
-### 💻 Windows 客户端使用
-
-客户端用于自动收集 Windows 计算机信息并提交到服务器。
-
+#### 健康检查
 ```bash
-# 1. 进入客户端目录
-cd client/
-
-# 2. 安装依赖
-pip install -r requirements.txt
-
-# 3. 查看使用说明
-python collect_info.py --help
-# 或直接查看脚本开头的详细文档字符串
-
-# 4. 配置服务器地址（三种方式任选其一）
-# 方式1: 编辑脚本中的 SERVER_URL 变量
-# 方式2: 设置环境变量 SERVER_URL
-# 方式3: 创建 .env 文件
-
-# 5. 运行收集脚本（需要管理员权限）
-python collect_info.py
+GET http://localhost/health/
 ```
 
-**说明**: 脚本会自动收集信息并提交到服务器，同时保存到本地 `computer_info.json` 用于调试。
+### 💻 Windows 客户端使用
+
+系统提供 PowerShell 脚本，用于自动收集 Windows 计算机信息并提交到服务器。
+
+#### 信息采集脚本
+
+`collect_computer_info.ps1` - PowerShell 信息采集脚本
+
+```powershell
+# 进入客户端目录
+cd client
+
+# 运行采集脚本（带详细日志和验证）
+.\collect_computer_info.ps1
+
+# 自定义服务器地址
+.\collect_computer_info.ps1 -ServerUrl "http://your-server-ip"
+```
+
+**功能特点**：
+- ✅ 完整的信息收集（硬件、系统、用户信息）
+- ✅ 本地备份（JSON 格式）
+- ✅ 详细的执行步骤显示
+- ✅ 自动获取 CSRF Token
+- ✅ 自动上传到服务器 API
+- ✅ 自动验证上传结果
+- ✅ 适合手动运行、测试或计划任务
+
+**收集的信息**：
+- **基本信息**：资产编码、SN 序列号、设备型号、设备类型
+- **硬件信息**：CPU 型号、内存大小
+- **系统信息**：操作系统版本、内部版本号
+- **用户信息**：用户名、计算机名
+- **日志信息**：执行日志、错误日志
+
+**部署方式**：
+- 手动运行（管理员权限）
+- Windows 任务计划程序（定期采集）
+- 组策略登录脚本（域环境）
+- 命令行参数支持自定义服务器地址
 
 ## 📋 数据模型
 
@@ -392,52 +415,17 @@ docker compose exec web python manage.py createsuperuser
 - ✅ Docker Hub - 预构建镜像 (`tornadoami/pc-info-record`)
 
 **镜像版本**：
-- `tornadoami/pc-info-record:latest` - 最新版本（自动更新）
-- `tornadoami/pc-info-record:v1.0.0` - 稳定版本（当前使用）
+
+- `tornadoami/pc-info-record:v1.0.1` - 稳定版本（当前使用）
 
 **更新镜像**：
 ```bash
-cd docker
 docker compose pull      # 拉取最新镜像
 docker compose up -d     # 重启服务应用新镜像
 ```
 
 ---
 
-### 传统部署
-
-如果不使用 Docker，可以参考以下步骤：
-
-1. **安装系统依赖**（LDAP 编译所需）
-   ```bash
-   sudo apt-get install libldap2-dev libsasl2-dev libssl-dev
-   ```
-
-2. **安装 Python 依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **配置环境变量**
-   ```bash
-   cp .env.example .env
-   # 编辑 .env，设置 DEBUG=False
-   ```
-
-4. **收集静态文件**
-   ```bash
-   python manage.py collectstatic --noinput
-   ```
-
-5. **启动 Gunicorn**
-   ```bash
-   gunicorn pc_info_record.wsgi:application \
-     --bind 0.0.0.0:8000 \
-     --workers 4 \
-     --timeout 120
-   ```
-
-6. **配置 Nginx** - 参考 [docker/nginx.conf](docker/nginx.conf)
 
 ## 🔧 LDAP/Active Directory 配置
 
