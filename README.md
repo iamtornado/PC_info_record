@@ -33,7 +33,8 @@
 ### 开发工具
 - **包管理**: uv (开发环境) / pip (Docker)
 - **容器化**: Docker + Docker Compose
-- **镜像仓库**: Docker Hub ([tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record))
+- **镜像仓库**: Docker Hub ([tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record)) - v1.0.3
+- **最新版本**: v1.0.3 (2025-10-16) - 修复中文字符显示问题
 - **数据库工具**: pgcli
 
 ## 📁 项目结构
@@ -416,7 +417,8 @@ docker compose exec web python manage.py createsuperuser
 
 **镜像版本**：
 
-- `tornadoami/pc-info-record:v1.0.1` - 稳定版本（当前使用）
+- `tornadoami/pc-info-record:v1.0.2` - 稳定版本（当前使用，含 Base64 日志支持）⭐
+- `tornadoami/pc-info-record:latest` - 最新版本（自动跟踪）
 
 **更新镜像**：
 ```bash

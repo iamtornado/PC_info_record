@@ -26,6 +26,7 @@ services:
 
   # Django 应用（开发环境 - 使用 runserver）
   web:
+    # 开发环境使用本地构建，支持代码热重载
     build:
       context: .
       dockerfile: docker/Dockerfile

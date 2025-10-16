@@ -26,7 +26,11 @@ services:
 
   # Django 应用
   web:
-    image: tornadoami/pc-info-record:v1.0.1
+    image: tornadoami/pc-info-record:latest  # 生产环境使用 Docker Hub 镜像
+    # 如需本地构建测试，取消注释下面两行并注释掉上面的 image
+    # build:
+    #   context: .
+    #   dockerfile: docker/Dockerfile
     container_name: pc_info_web
     runtime: runc
     command: gunicorn pc_info_record.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120 --access-logfile - --error-logfile -

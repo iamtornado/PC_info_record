@@ -19,6 +19,10 @@ class ComputerSerializer(serializers.ModelSerializer):
 class ComputerCreateSerializer(serializers.ModelSerializer):
     """用于创建计算机记录的序列化器 - 支持历史记录和错误日志"""
     
+    # 明确指定 execution_log 可以为空
+    execution_log = serializers.CharField(required=False, allow_blank=True, default='')
+    error_log = serializers.CharField(required=False, allow_blank=True, default='')
+    
     class Meta:
         model = Computer
         fields = [

@@ -162,6 +162,16 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'api': {
+            'handlers': ['console'] if os.getenv('DOCKER_CONTAINER') else ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'computers': {
+            'handlers': ['console'] if os.getenv('DOCKER_CONTAINER') else ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 
