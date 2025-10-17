@@ -1,5 +1,49 @@
 # 更新日志
 
+## [v1.0.4] - 2025-10-17
+
+### 🐛 重要修复
+- ✅ **数据库迁移同步问题**: 修复了模型和数据库表结构不一致的问题
+  - 症状：Admin 后台添加记录报错 `column "user_name" does not exist`
+  - 症状：API 调用返回 500 错误
+  - 原因：旧迁移文件创建的表结构与当前模型不匹配
+  - 解决：生成并应用 0003 迁移文件
+  
+- ✅ **LDAP 登录循环问题**: 修复了用户登录后被重定向回登录页的问题
+  - 原因：旧的数据库/会话状态冲突
+  - 解决：清理环境数据（docker compose down -v）
+  
+### 🔧 技术改进
+- ✅ **数据库模型简化**:
+  - 删除了 `Department` 和 `Employee` 模型
+  - 直接在 `Computer` 模型中存储 `user_name` 和 `computer_name`
+  - 添加了完整的日志字段（execution_log, error_log）
+  - 将 `asset_code` 从 unique 改为 db_index（支持历史记录）
+
+- ✅ **迁移管理**:
+  - 添加了迁移 0003：同步模型变化到数据库
+  - 改进了生产环境部署流程
+  - 添加了迁移状态检查工具
+
+### 📋 数据库变更
+- ✅ 删除表：`computers_department`, `computers_employee`
+- ✅ 新增字段：`user_name`, `computer_name`, `execution_log`, `log_size`, `error_log`, `has_errors`
+- ✅ 修改字段：`asset_code` (unique → db_index)
+
+### 📚 文档更新
+- ✅ 添加了完整的问题解决总结（PROBLEM_SOLVED_SUMMARY.md）
+- ✅ 更新了 README 故障排查章节
+- ✅ 添加了迁移问题的诊断和解决方案
+
+### 🚀 部署说明
+**重要**：升级到此版本需要应用数据库迁移：
+```bash
+docker compose exec web python manage.py migrate
+docker compose restart web
+```
+
+---
+
 ## [v1.0.3] - 2025-10-16
 
 ### 🎉 新功能

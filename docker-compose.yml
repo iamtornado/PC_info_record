@@ -26,7 +26,7 @@ services:
 
   # Django 应用
   web:
-    image: tornadoami/pc-info-record:latest  # 生产环境使用 Docker Hub 镜像
+    image: tornadoami/pc-info-record:v1.0.4  # 生产环境使用 Docker Hub 镜像（具体版本）
     # 如需本地构建测试，取消注释下面两行并注释掉上面的 image
     # build:
     #   context: .

@@ -1,6 +1,6 @@
 [project]
 name = "pc-info-record"
-version = "1.0.3"
+version = "1.0.4"
 description = "PC信息记录系统"
 authors = [
     {name = "Admin", email = "admin@example.com"}

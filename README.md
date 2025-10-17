@@ -33,8 +33,8 @@
 ### 开发工具
 - **包管理**: uv (开发环境) / pip (Docker)
 - **容器化**: Docker + Docker Compose
-- **镜像仓库**: Docker Hub ([tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record)) - v1.0.3
-- **最新版本**: v1.0.3 (2025-10-16) - 修复中文字符显示问题
+- **镜像仓库**: Docker Hub ([tornadoami/pc-info-record](https://hub.docker.com/r/tornadoami/pc-info-record)) - v1.0.4
+- **最新版本**: v1.0.4 (2025-10-17) - 修复数据库迁移同步问题
 - **数据库工具**: pgcli
 
 ## 📁 项目结构
@@ -127,7 +127,7 @@ cd PC_info_record
 
 # 2. 修改 docker-compose.yml，使用本地构建
 nano docker-compose.yml
-# 将 web 服务的 image: tornadoami/pc-info-record:v1.0.0 注释掉
+# 将 web 服务的 image: tornadoami/pc-info-record:v1.0.4 注释掉
 # 取消注释 build 配置：
 #   build:
 #     context: .
@@ -398,7 +398,7 @@ cd PC_info_record
 cp .env.example .env
 nano .env  # 修改为生产配置（重要：DEBUG=False, SECRET_KEY, DB_PASSWORD）
 
-# 3. 启动服务（自动从 Docker Hub 拉取 tornadoami/pc-info-record:v1.0.0）
+# 3. 启动服务（自动从 Docker Hub 拉取 tornadoami/pc-info-record:v1.0.4）
 docker compose up -d
 
 # 4. 创建超级用户
@@ -417,8 +417,9 @@ docker compose exec web python manage.py createsuperuser
 
 **镜像版本**：
 
-- `tornadoami/pc-info-record:v1.0.2` - 稳定版本（当前使用，含 Base64 日志支持）⭐
-- `tornadoami/pc-info-record:latest` - 最新版本（自动跟踪）
+- `tornadoami/pc-info-record:v1.0.4` - 最新稳定版（推荐，修复数据库迁移问题）⭐
+- `tornadoami/pc-info-record:v1.0.3` - 稳定版本（含 Base64 日志支持和中文字符修复）
+- `tornadoami/pc-info-record:latest` - 最新版本（自动跟踪 v1.0.4）
 
 **更新镜像**：
 ```bash

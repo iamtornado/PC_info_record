@@ -58,3 +58,11 @@ class ComputerAdmin(admin.ModelAdmin):
         return "✅ 正常"
     has_errors.short_description = "状态"
     has_errors.admin_order_field = 'has_errors'
+    
+    # 显示actions数量
+    actions_on_top = True
+    actions_on_bottom = False
+    
+    # 列表分页设置
+    list_per_page = 50
+    list_max_show_all = 200
